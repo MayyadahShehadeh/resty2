@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState,useReducer,useEffect } from 'react';
 
 import './app.scss';
 
@@ -8,41 +8,77 @@ import Header from './components/header';
 import Footer from './components/footer';
 import Form from './components/form';
 import Results from './components/results';
+import axios from 'axios';
+import History from './components/history/history';
+import historyReducer, {addHistoryAction,initialState} from './components/history/reducer';
 
-class App extends React.Component {
 
-  constructor(props) {
-    super(props);
-    this.state = {
-      data: null,
-      requestParams: {},
-    };
+export default function app(props) {
+  const [data, setData] = useState(null);
+  const [requestParams, setRequestParams] = useState({});
+
+  const [state,dispatch] = useReducer(historyReducer,initialState);
+  const [render,setRender]=useState('')
+
+  async function callApi(requestParams){
+    // mock output (RESPONSE)
+    console.log(requestParams);
+
+    if (requestParams.url) {
+      const response = await axios({
+        method: requestParams.method,
+        url: requestParams.url,
+        data: requestParams.request,
+      });
+
+      setData(response);
+      setRequestParams(requestParams);
+      dispatch(addHistoryAction(requestParams));
+
+      console.log('res ::', response);
+
+    } else {
+
+      const data = {
+        count: 2,
+        results: [
+          { name: 'fake thing 1', url: 'http://fakethings.com/1' },
+          { name: 'fake thing 2', url: 'http://fakethings.com/2' },
+        ],
+      };
+      setData(data);
+      setRequestParams(requestParams);
+      dispatch(addHistoryAction(requestParams));
+
+      
+    }
   }
+  useEffect(() => {
 
-  callApi = (requestParams) => {
-    // mock output
-    const data = {
-      count: 2,
-      results: [
-        {name: 'fake thing 1', url: 'http://fakethings.com/1'},
-        {name: 'fake thing 2', url: 'http://fakethings.com/2'},
-      ],
-    };
-    this.setState({data, requestParams});
-  }
+    setRender(`method : ${requestParams.method}, URL : ${requestParams.url}`)
+  })
 
-  render() {
-    return (
+  return (
+    <div>
+
       <React.Fragment>
         <Header />
-        <div>Request Method: {this.state.requestParams.method}</div>
-        <div>URL: {this.state.requestParams.url}</div>
-        <Form handleApiCall={this.callApi} />
-        <Results data={this.state.data} />
+        <div>Request Method: {requestParams.method}</div>
+        <div>URL: {requestParams.url}</div>
+        <div>from useEffect : {render}</div>
+        <Form handleApiCall={callApi} />
+        <Results data={data} />
+        
+      <History historyArr = {state.history} 
+      handleApiCall={callApi}/>
+
+      {console.log('state.history', state.history)}
         <Footer />
       </React.Fragment>
-    );
-  }
+    </div>
+  )
 }
 
-export default App;
+
+
+

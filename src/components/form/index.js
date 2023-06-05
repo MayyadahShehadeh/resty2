@@ -18,27 +18,31 @@ export default function Form(props) {
     const formData = {
       method:restMethod,
       url: url,
+      request
     };
-    props.handleApiCall(formData,request);
+    props.handleApiCall(formData);
   }
 
 
-
-  function UrlSetstae(e) {
+  function UrlSetstate(e) {
     setUrl(e.target.value);
   }
 
+// ----- for get and delete methods to not show teatarea
   function restMethodFun(e) {
-    setrestMethod(e.target.id); // we use according to the id for every method
+    setrestMethod(e.target.id);
+    console.log('rest method :::: ', e.target.id);
     settextArea(false);
   }
-
+  
+// ---- to show textarea just for put and post methods
   function textAreaFun(e) {
     settextArea(true);
     setrestMethod(e.target.id);
   }
   function requestBodyFun(e) {
-    setrequest(e.target.value);
+    let data = JSON.parse(e.target.value);
+    setrequest(data);
   }
 
 
@@ -49,7 +53,7 @@ export default function Form(props) {
 
         <label >
           <span>URL: </span>
-          <input name='url' type='text'  onChange={UrlSetstae} />
+          <input name='url' type='text'  onChange={UrlSetstate} />
           <button type="submit">GO!</button>
         </label>
 
